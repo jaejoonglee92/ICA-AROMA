@@ -40,10 +40,11 @@ featoptions.add_argument('-f', '-feat', dest="inFeat", required=False, help='Fea
 optoptions = parser.add_argument_group('Optional arguments')
 optoptions.add_argument('-tr', dest="TR", help='TR in seconds', type=float)
 optoptions.add_argument('-den', dest="denType", default="nonaggr", help='Type of denoising strategy: \'no\': only classification, no denoising; \'nonaggr\': non-aggresssive denoising (default); \'aggr\': aggressive denoising; \'both\': both aggressive and non-aggressive denoising (seperately)')
-optoptions.add_argument('-md', '-meldir', dest="melDir", default="",help='MELODIC directory name, in case MELODIC has been run previously.')
+optoptions.add_argument('-md', '-meldir', dest="melDir", default="", help='MELODIC directory name, in case MELODIC has been run previously.')
 optoptions.add_argument('-dim', dest="dim", default=0, help='Dimensionality reduction into #num dimensions when running MELODIC (default: automatic estimation; i.e. -dim 0)', type=int)
 optoptions.add_argument('-ow', '-overwrite', dest="overwrite", action='store_true', help='Overwrite existing output', default=False)
 optoptions.add_argument('-np', '-noplots', dest="generate_plots", action='store_false', help='Plot component classification overview similar to plot in the main AROMA paper', default=True)
+optoptions.add_argument('-uns', '-unsmoothed', dest="unsmoothed", default="", help='File name of the unsmoothed fMRI data (.nii.gz) to be used for denoising instead of the smoothed input file.')
 
 print('\n------------------------------- RUNNING ICA-AROMA ------------------------------- ')
 print('--------------- \'ICA-based Automatic Removal Of Motion Artifacts\' --------------- \n')
@@ -232,6 +233,9 @@ if args.generate_plots:
 if (denType != 'no'):
     print('Step 3) Data denoising')
     aromafunc.denoising(fslDir, inFile, outDir, melmix, denType, motionICs)
+    if args.unsmoothed:
+        print('  - Unsmoothed data detected - denoising as well')
+        aromafunc.denoising(fslDir, args.unsmoothed, outDir, melmix, denType, motionICs, suffix='_unsmoothed')
 
 # Revert to old directory
 os.chdir(cwd)

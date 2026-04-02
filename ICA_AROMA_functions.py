@@ -43,7 +43,7 @@ def runICA(fslDir, inFile, outDir, melDirIn, mask, dim, TR):
     # When a MELODIC directory is specified,
     # check whether all needed files are present.
     # Otherwise... run MELODIC again
-    if len(melDir) != 0 and os.path.isfile(os.path.join(melDirIn, 'melodic_IC.nii.gz')) and os.path.isfile(os.path.join(melDirIn, 'melodic_FTmix')) and os.path.isfile(os.path.join(melDirIn, 'melodic_mix')):
+    if len(melDirIn) != 0 and os.path.isfile(os.path.join(melDirIn, 'melodic_IC.nii.gz')) and os.path.isfile(os.path.join(melDirIn, 'melodic_FTmix')) and os.path.isfile(os.path.join(melDirIn, 'melodic_mix')):
 
         print('  - The existing/specified MELODIC directory will be used.')
 
@@ -531,8 +531,8 @@ def classification(outDir, maxRPcorr, edgeFract, HFC, csfFract):
     return motionICs
 
 
-def denoising(fslDir, inFile, outDir, melmix, denType, denIdx):
-    """ This function classifies the ICs based on the four features; 
+def denoising(fslDir, inFile, outDir, melmix, denType, denIdx, suffix=''):
+    """ This function classifies the ICs based on the four features;
     maximum RP correlation, high-frequency content, edge-fraction and CSF-fraction
 
     Parameters
@@ -543,10 +543,11 @@ def denoising(fslDir, inFile, outDir, melmix, denType, denIdx):
     melmix:     Full path of the melodic_mix text file
     denType:    Type of requested denoising ('aggr': aggressive, 'nonaggr': non-aggressive, 'both': both aggressive and non-aggressive 
     denIdx:     Indices of the components that should be regressed out
+    suffix:     Optional suffix appended to output filename (default: '')
 
     Output (within the requested output directory)
     ---------------------------------------------------------------------------------
-    denoised_func_data_<denType>.nii.gz:        A nii.gz file of the denoised fMRI data"""
+    denoised_func_data_<denType>[<suffix>].nii.gz:        A nii.gz file of the denoised fMRI data"""
 
     # Import required modules
     import os
@@ -569,7 +570,7 @@ def denoising(fslDir, inFile, outDir, melmix, denType, denIdx):
                                 '--in=' + inFile,
                                 '--design=' + melmix,
                                 '--filter="' + denIdxStrJoin + '"',
-                                '--out=' + os.path.join(outDir, 'denoised_func_data_nonaggr.nii.gz')]))
+                                '--out=' + os.path.join(outDir, 'denoised_func_data_nonaggr' + suffix + '.nii.gz')]))
 
         # Aggressive denoising of the data using fsl_regfilt (full regression)
         if (denType == 'aggr') or (denType == 'both'):
@@ -577,11 +578,11 @@ def denoising(fslDir, inFile, outDir, melmix, denType, denIdx):
                                 '--in=' + inFile,
                                 '--design=' + melmix,
                                 '--filter="' + denIdxStrJoin + '"',
-                                '--out=' + os.path.join(outDir, 'denoised_func_data_aggr.nii.gz'),
+                                '--out=' + os.path.join(outDir, 'denoised_func_data_aggr' + suffix + '.nii.gz'),
                                 '-a']))
     else:
         print("  - None of the components were classified as motion, so no denoising is applied (a symbolic link to the input file will be created).")
         if (denType == 'nonaggr') or (denType == 'both'):
-            os.symlink(inFile, os.path.join(outDir, 'denoised_func_data_nonaggr.nii.gz'))
+            os.symlink(inFile, os.path.join(outDir, 'denoised_func_data_nonaggr' + suffix + '.nii.gz'))
         if (denType == 'aggr') or (denType == 'both'):
-            os.symlink(inFile, os.path.join(outDir, 'denoised_func_data_aggr.nii.gz'))
+            os.symlink(inFile, os.path.join(outDir, 'denoised_func_data_aggr' + suffix + '.nii.gz'))
