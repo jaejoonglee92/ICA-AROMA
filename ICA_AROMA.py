@@ -234,8 +234,12 @@ if (denType != 'no'):
     print('Step 3) Data denoising')
     aromafunc.denoising(fslDir, inFile, outDir, melmix, denType, motionICs)
     if args.unsmoothed:
-        print('  - Unsmoothed data detected - denoising as well')
-        aromafunc.denoising(fslDir, args.unsmoothed, outDir, melmix, denType, motionICs, suffix='_unsmoothed')
+        unsFile = args.unsmoothed
+        print('  - Also denoising unsmoothed fMRI')
+        if not os.path.isfile(unsFile):
+            print('Warning! The specified unsmoothed fMRI file', unsFile, 'does not exist.')
+        else:
+            aromafunc.denoising(fslDir, unsFile, outDir, melmix, denType, motionICs, suffix='_unsmoothed')
 
 # Revert to old directory
 os.chdir(cwd)
